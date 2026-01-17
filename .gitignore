@@ -1,0 +1,35 @@
+node_modules/
+.expo/
+dist/
+npm-debug.*
+yarn-error.log
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+*.orig.*
+web-build/
+.env
+.vscode/
+storybook-static/
+tooling/ngrok/ngrok.yml
+
+.env
+.envrc
+
+# macOS
+.DS_Store
+*bin
+
+#user specific files
+.idea/
+.vscode/settings.json
+*.code-workspace
+.editorconfig
+
+# Expo auto-generated native sources
+ios/
+android/
+
+coverage

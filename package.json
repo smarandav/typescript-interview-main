@@ -1,0 +1,15 @@
+{
+  "name": "credit-score",
+  "scripts": {
+    "dev": "tsx watch ./credit-score.ts",
+    "test": "vitest"
+  },
+  "devDependencies": {
+    "tsx": "^4.7.3",
+    "typescript": "^5.4.5",
+    "vitest": "^1.6.0"
+  },
+  "engines": {
+    "node": "^22"
+  }
+}
