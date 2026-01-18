@@ -40,3 +40,13 @@ export const creditScoreCategoryMap: Map<CreditScoreCategory, CreditScoreCategor
   [CreditScoreCategory.VERY_POOR, {value : 560, start : 0.9, end :1}]
 ]);
 
+export class ValidationError extends Error {
+  constructor(
+    message: string,
+    public field: string,
+    public value: unknown
+  ) {
+    super(message);
+    this.name = this.constructor.name;
+  }
+}

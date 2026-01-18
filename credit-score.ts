@@ -1,4 +1,5 @@
 import { CreditReport, CreditScore, CreditScoreCategory, InvoiceStatus, creditScoreCategoryMap } from "./types";
+import { ValidationError } from "./types";
 import { subMonths } from 'date-fns';
 
 /**
@@ -15,6 +16,17 @@ If perfect history in last 12 months → bump up one band (or keep at excellent)
 
 export const getCreditScore = (c: CreditReport, now: Date = new Date()): CreditScore => {
 
+  creditScoreCategoryArray.sort(t => t.start);
+    const start = Math.min(...creditScoreCategoryArray.map(item => item.start));
+    const end = Math.max(...creditScoreCategoryArray.map(item => item.end));
+
+  if (c.creditUtilisationPercentage > 1 || c.creditUtilisationPercentage <= 0)
+  {
+    throw new ValidationError(`Credit Utilisation Percentage is not within 
+                                the accepted range start ${start} and end ${end}`, 
+                                "creditUtilisationPercentage", c.creditUtilisationPercentage);
+  }
+
   if (c.paymentHistory.find(s => s.status === InvoiceStatus.UNPAID 
     && s.dueDate <  subMonths(now, 6)))
   {
@@ -30,7 +42,8 @@ export const getCreditScore = (c: CreditReport, now: Date = new Date()): CreditS
      c.creditUtilisationPercentage += 0.21;
   }
 
-  if (c.paymentHistory.filter(s => s.status === InvoiceStatus.UNPAID && 
+  if (c.creditUtilisationPercentage >= creditScoreCategoryMap.get(CreditScoreCategory.EXCELLENT)!.end &&
+      c.paymentHistory.filter(s => s.status === InvoiceStatus.UNPAID && 
         s.dueDate > subMonths(now, 6)).length === 0 &&
       c.paymentHistory.filter(s => s.status === InvoiceStatus.PAID &&
         s.dueDate > subMonths(now, 12)).length >= 0)
@@ -42,11 +55,9 @@ export const getCreditScore = (c: CreditReport, now: Date = new Date()): CreditS
 
   var creditCategory = creditScoreCategoryArray.find(r => x > r.start && x <=r.end);
   if (!creditCategory) {
-    var excellentCategory = creditScoreCategoryArray.find(r => r.category == CreditScoreCategory.EXCELLENT);
-    return {
-      value: excellentCategory!.value,
-      category: excellentCategory!.category,
-    };
+    throw new ValidationError(`Credit Utilisation Percentage is not within 
+                                the accepted ranges of start ${start} and end ${end}`, 
+                                "creditUtilisationPercentage", c.creditUtilisationPercentage);
   }
   return { value : creditCategory.value, category: creditCategory.category};
 };
