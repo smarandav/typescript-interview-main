@@ -24,17 +24,25 @@ export const getCreditScore = (c: CreditReport, now: Date = new Date()): CreditS
     };
   }
 
-  if (c.paymentHistory.filter(s => s.status === InvoiceStatus.UNPAID 
-    && s.dueDate > subMonths(now, 6)).length > 2)
+  if (c.creditUtilisationPercentage < creditScoreCategoryMap.get(CreditScoreCategory.VERY_POOR)!.start &&
+      c.paymentHistory.filter(s => s.status === InvoiceStatus.UNPAID && s.dueDate > subMonths(now, 6)).length > 2)
   {
-     c.creditUtilisationPercentage += 0.3;
+     c.creditUtilisationPercentage += 0.21;
+  }
+
+  if (c.paymentHistory.filter(s => s.status === InvoiceStatus.UNPAID && 
+        s.dueDate > subMonths(now, 6)).length === 0 &&
+      c.paymentHistory.filter(s => s.status === InvoiceStatus.PAID &&
+        s.dueDate > subMonths(now, 12)).length >= 0)
+  {
+     c.creditUtilisationPercentage -= 0.2;
   }
 
   const x = c.creditUtilisationPercentage;
 
-  var creditCategory = creditScoreCategoryRanges.find(r => x > r.start && x <=r.end);
+  var creditCategory = creditScoreCategoryArray.find(r => x > r.start && x <=r.end);
   if (!creditCategory) {
-    var excellentCategory = creditScoreCategoryRanges.find(r => r.category == CreditScoreCategory.EXCELLENT);
+    var excellentCategory = creditScoreCategoryArray.find(r => r.category == CreditScoreCategory.EXCELLENT);
     return {
       value: excellentCategory!.value,
       category: excellentCategory!.category,
@@ -43,13 +51,14 @@ export const getCreditScore = (c: CreditReport, now: Date = new Date()): CreditS
   return { value : creditCategory.value, category: creditCategory.category};
 };
 
-const creditScoreCategoryRanges = [
-  { start: 0, end: 0.3, value: creditScoreCategoryMap.get(CreditScoreCategory.EXCELLENT)!, category: CreditScoreCategory.EXCELLENT },
-  { start: 0.3, end: 0.5, value: creditScoreCategoryMap.get(CreditScoreCategory.GOOD)!, category: CreditScoreCategory.GOOD },
-  { start: 0.5, end: 0.7, value: creditScoreCategoryMap.get(CreditScoreCategory.FAIR)!, category: CreditScoreCategory.FAIR },
-  { start: 0.7, end: 0.9, value: creditScoreCategoryMap.get(CreditScoreCategory.POOR)!, category: CreditScoreCategory.POOR },
-  { start: 0.9, end: 1, value: creditScoreCategoryMap.get(CreditScoreCategory.VERY_POOR)!, category: CreditScoreCategory.VERY_POOR }
-];
+export const creditScoreCategoryArray = Array.from(creditScoreCategoryMap.entries()).map(
+  ([category, { start, end, value }]) => ({
+    start,
+    end,
+    value,
+    category
+  })
+);
 
 /**
  * @param value  value to calculate percentage

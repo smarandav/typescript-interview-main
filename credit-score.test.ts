@@ -12,8 +12,18 @@ describe("getCreditScore", () => {
 
     const creditScore = getCreditScore(creditReport);
 
-    expect(creditScore.value).toBe(creditScoreCategoryMap.get(CreditScoreCategory.VERY_POOR)!);
-    expect(creditScore.category).toBe(CreditScoreCategory.VERY_POOR);
+    expect(creditScore.value).toBe(creditScoreCategoryMap.get(CreditScoreCategory.POOR)!.value);
+    expect(creditScore.category).toBe(CreditScoreCategory.POOR);
+  });
+
+  it("should return 880 if perfect history in last 12 months", () => {
+    const creditReport = {
+      paymentHistory: [],
+      creditUtilisationPercentage: 0.9,
+    };
+    const creditScore = getCreditScore(creditReport, new Date());
+    expect(creditScore.value).toBe(creditScoreCategoryMap.get(CreditScoreCategory.FAIR)!.value);
+    expect(creditScore.category).toBe(CreditScoreCategory.FAIR);
   });
 
   it("should return 720 if there are any unpaid invoices past due older than 6 months", () => {
@@ -22,21 +32,34 @@ describe("getCreditScore", () => {
       creditUtilisationPercentage: 0.4,
     };
     const creditScore = getCreditScore(creditReport, new Date());
-    expect(creditScore.value).toBe(creditScoreCategoryMap.get(CreditScoreCategory.POOR)!);
+    expect(creditScore.value).toBe(creditScoreCategoryMap.get(CreditScoreCategory.POOR)!.value);
     expect(creditScore.category).toBe(CreditScoreCategory.POOR);
   });
 
-   it("should return 720 if there are any unpaid invoices past due less than 6 months downgrade by one band", () => {
+   it("should return 560 if there are any unpaid invoices past due less than 6 months downgrade by one band", () => {
     const creditReport = {
       paymentHistory: [{ dueDate: subMonths(Date.now(), 4), status: InvoiceStatus.UNPAID },
         { dueDate: subMonths(Date.now(), 3), status: InvoiceStatus.UNPAID },
         { dueDate: subMonths(Date.now(), 2), status: InvoiceStatus.UNPAID }
       ] as Invoice[],
-      creditUtilisationPercentage: 0.6,
+      creditUtilisationPercentage: 0.5,
     };
     const creditScore = getCreditScore(creditReport, new Date());
-    expect(creditScore.value).toBe(creditScoreCategoryMap.get(CreditScoreCategory.POOR)!);
+    expect(creditScore.value).toBe(creditScoreCategoryMap.get(CreditScoreCategory.POOR)!.value);
     expect(creditScore.category).toBe(CreditScoreCategory.POOR);
+  });
+
+   it("should return 720 if there are any unpaid invoices past due less than 6 months and already very poor keep band", () => {
+    const creditReport = {
+      paymentHistory: [{ dueDate: subMonths(Date.now(), 4), status: InvoiceStatus.UNPAID },
+        { dueDate: subMonths(Date.now(), 3), status: InvoiceStatus.UNPAID },
+        { dueDate: subMonths(Date.now(), 2), status: InvoiceStatus.UNPAID }
+      ] as Invoice[],
+      creditUtilisationPercentage: 0.91,
+    };
+    const creditScore = getCreditScore(creditReport, new Date());
+    expect(creditScore.value).toBe(creditScoreCategoryMap.get(CreditScoreCategory.VERY_POOR)!.value);
+    expect(creditScore.category).toBe(CreditScoreCategory.VERY_POOR);
   });
 
    it("should return 720 if the credit utilisation is between 70% and 90%", () => {
@@ -45,8 +68,8 @@ describe("getCreditScore", () => {
       creditUtilisationPercentage: 0.8,
     };
     const creditScore = getCreditScore(creditReport);
-    expect(creditScore.value).toBe(creditScoreCategoryMap.get(CreditScoreCategory.POOR)!);
-    expect(creditScore.category).toBe(CreditScoreCategory.POOR);
+    expect(creditScore.value).toBe(creditScoreCategoryMap.get(CreditScoreCategory.FAIR)!.value);
+    expect(creditScore.category).toBe(CreditScoreCategory.FAIR);
   });
 
   it("should return 880 if the credit utilisation is between 50% and 70%", () => {
@@ -55,8 +78,8 @@ describe("getCreditScore", () => {
       creditUtilisationPercentage: 0.6,
     };
     const creditScore = getCreditScore(creditReport);
-    expect(creditScore.value).toBe(creditScoreCategoryMap.get(CreditScoreCategory.FAIR)!);
-    expect(creditScore.category).toBe(CreditScoreCategory.FAIR);
+    expect(creditScore.value).toBe(creditScoreCategoryMap.get(CreditScoreCategory.GOOD)!.value);
+    expect(creditScore.category).toBe(CreditScoreCategory.GOOD);
   });
 
   it("should return 960 if the credit utilisation is between 30% and 50%", () => {
@@ -65,17 +88,17 @@ describe("getCreditScore", () => {
       creditUtilisationPercentage: 0.4,
     };
     const creditScore = getCreditScore(creditReport);
-    expect(creditScore.value).toBe(creditScoreCategoryMap.get(CreditScoreCategory.GOOD)!);
-    expect(creditScore.category).toBe(CreditScoreCategory.GOOD);
+    expect(creditScore.value).toBe(creditScoreCategoryMap.get(CreditScoreCategory.EXCELLENT)!.value);
+    expect(creditScore.category).toBe(CreditScoreCategory.EXCELLENT);
   });
 
   it("should return 999 if the credit utilisation is less than 30%", () => {
     const creditReport = {
       paymentHistory: [],
-      creditUtilisationPercentage: 0.2,
+      creditUtilisationPercentage: 0.1,
     };
     const creditScore = getCreditScore(creditReport);
-    expect(creditScore.value).toBe(creditScoreCategoryMap.get(CreditScoreCategory.EXCELLENT)!);
+    expect(creditScore.value).toBe(creditScoreCategoryMap.get(CreditScoreCategory.EXCELLENT)!.value);
     expect(creditScore.category).toBe(CreditScoreCategory.EXCELLENT);
   });
 });
