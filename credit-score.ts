@@ -16,6 +16,11 @@ If perfect history in last 12 months → bump up one band (or keep at excellent)
 
 export const getCreditScore = (c: CreditReport, now: Date = new Date()): CreditScore => {
 
+  if (!Number.isFinite(c.creditUtilisationPercentage))
+  {
+    throw TypeError("creditUtilisationPercentage must be a finite number");
+  }
+
   creditScoreCategoryArray.sort(t => t.start);
     const start = Math.min(...creditScoreCategoryArray.map(item => item.start));
     const end = Math.max(...creditScoreCategoryArray.map(item => item.end));

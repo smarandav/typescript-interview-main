@@ -4,6 +4,45 @@ import { CreditReport, CreditScore, Invoice, InvoiceStatus, CreditScoreCategory,
 import { subMonths, subDays, addDays, addMonths, subHours, addHours, startOfDay, endOfDay, differenceInDays, isThisYear } from 'date-fns';
 
 describe("getCreditScore", () => {
+  it("should throw TypeError if creditUtilisationPercentage is NaN", () => {
+    const creditReport = {
+      paymentHistory: [],
+      creditUtilisationPercentage: NaN,
+    };
+    expect(() => getCreditScore(creditReport)).toThrow(TypeError);
+  });
+
+  it("should throw TypeError if creditUtilisationPercentage is Infinity", () => {
+    const creditReport = {
+      paymentHistory: [],
+      creditUtilisationPercentage: Infinity,
+    };
+    expect(() => getCreditScore(creditReport)).toThrow(TypeError);
+  });
+
+  it("should throw TypeError if creditUtilisationPercentage is -Infinity", () => {
+    const creditReport = {
+      paymentHistory: [],
+      creditUtilisationPercentage: -Infinity,
+    };
+    expect(() => getCreditScore(creditReport)).toThrow(TypeError);
+  });
+
+  it("should throw ValidationError if creditUtilisationPercentage is 0", () => {
+    const creditReport = {
+      paymentHistory: [],
+      creditUtilisationPercentage: 0,
+    };
+    expect(() => getCreditScore(creditReport)).toThrow();
+  });
+
+  it("should throw ValidationError if creditUtilisationPercentage is greater than 1", () => {
+    const creditReport = {
+      paymentHistory: [],
+      creditUtilisationPercentage: 1.01,
+    };
+    expect(() => getCreditScore(creditReport)).toThrow();
+  });
   it("should return 560 if the credit utilisation is more than 90%", () => {
     const creditReport = {
       paymentHistory: [],
