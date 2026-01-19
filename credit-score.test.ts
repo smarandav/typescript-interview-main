@@ -1,7 +1,7 @@
 import { expect, describe, it } from "vitest";
-import { getCreditScore } from "./credit-score";
+import { calculatePercentage, getCreditScore } from "./credit-score";
 import { CreditReport, CreditScore, Invoice, InvoiceStatus, CreditScoreCategory, creditScoreCategoryMap } from "./types";
-import { subMonths, subDays, addDays, addMonths, subHours, addHours, startOfDay, endOfDay, differenceInDays } from 'date-fns';
+import { subMonths, subDays, addDays, addMonths, subHours, addHours, startOfDay, endOfDay, differenceInDays, isThisYear } from 'date-fns';
 
 describe("getCreditScore", () => {
   it("should return 560 if the credit utilisation is more than 90%", () => {
@@ -101,4 +101,19 @@ describe("getCreditScore", () => {
     expect(creditScore.value).toBe(creditScoreCategoryMap.get(CreditScoreCategory.EXCELLENT)!.value);
     expect(creditScore.category).toBe(CreditScoreCategory.EXCELLENT);
   });
+});
+
+describe("calculatePercentage", () => {
+  it("returns 0 when total is 0 - avoids devision by 0", () => {
+    expect(calculatePercentage(10, 0)).toBe(0);
+  });
+
+  it("calculates a ratio rounded to two decimals", () => {
+    expect(calculatePercentage(1,4)).toBe(0.25);
+  });
+
+  it("throws when not a number or infinit values", () => {
+    expect(() => calculatePercentage(Number.NaN, 1)).toThrow(TypeError);
+    expect(() => calculatePercentage(1, Number.NEGATIVE_INFINITY)).toThrow(TypeError);
+  })
 });

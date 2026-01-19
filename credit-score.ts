@@ -76,7 +76,15 @@ export const creditScoreCategoryArray = Array.from(creditScoreCategoryMap.entrie
  * @param total total value
  * @returns percentage with 2 decimal places. E.g. 0.25
  */
-const calculatePercentage = (value: number, total: number) => {
+export const calculatePercentage = (value: number, total: number) => {
+  if (!Number.isFinite(value) || !Number.isFinite(total))
+  {
+    throw new TypeError("value and total must be finit integers");
+  }
+
+  if(total == 0){
+    return 0;
+  }
   return Math.round((value / total) * 100) / 100;
 };
 
