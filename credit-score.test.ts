@@ -1,5 +1,5 @@
 import { expect, describe, it } from "vitest";
-import { getCreditScore, _bandMap, calculatePercentage } from "./credit-score";
+import { getCreditScore, _bandMap, calculatePercentage, CreditScore } from "./credit-score";
 import { CreditScoreCategory, InvoiceStatus } from "./types";
 import { subMonths, addMonths } from 'date-fns';
 
@@ -12,8 +12,7 @@ describe("getCreditScore", () => {
       creditUtilisationPercentage: 0.3,
     };
 
-    expect(getCreditScore(creditReport)).toEqual({value: _bandMap.get(CreditScoreCategory.VeryPoor)!.value, 
-                                  category : CreditScoreCategory.VeryPoor});
+    expect(getCreditScore(creditReport)).toEqual(CreditScore.fromCategory(CreditScoreCategory.VeryPoor));
   });
 
   it("should return poor if there is any overdue unpaid invoice", () => {
@@ -22,8 +21,7 @@ describe("getCreditScore", () => {
       creditUtilisationPercentage: 0.3,
     };
 
-    expect(getCreditScore(creditReport)).toEqual({value: _bandMap.get(CreditScoreCategory.Poor)!.value, 
-                                  category : CreditScoreCategory.Poor});
+    expect(getCreditScore(creditReport)).toEqual(CreditScore.fromCategory(CreditScoreCategory.Poor));
   });
 
   it("should return very poor if creditUtilisationPercentage is over 90% and there is any overdue unpaid invoice", () => {
@@ -32,8 +30,7 @@ describe("getCreditScore", () => {
       creditUtilisationPercentage: 0.95,
     };
 
-    expect(getCreditScore(creditReport)).toEqual({value: _bandMap.get(CreditScoreCategory.VeryPoor)!.value, 
-                                  category : CreditScoreCategory.VeryPoor});
+    expect(getCreditScore(creditReport)).toEqual(CreditScore.fromCategory(CreditScoreCategory.VeryPoor));
   });
 
   it("showd throw type error when creditUtilisationPercentage is not a finite number")
@@ -50,7 +47,7 @@ describe("getCreditScore", () => {
 
     const creditScore = getCreditScore(creditReport);
 
-    expect(creditScore).toEqual({value: _bandMap.get(CreditScoreCategory.VeryPoor)!.value, category : CreditScoreCategory.VeryPoor});
+    expect(creditScore).toEqual(CreditScore.fromCategory(CreditScoreCategory.VeryPoor));
   });
 
   it("should return poor if the credit utilisation is between 70% and 90%", () => {
@@ -59,11 +56,9 @@ describe("getCreditScore", () => {
       creditUtilisationPercentage: 0.8,
     };
     const creditScore = getCreditScore(creditReport);
-    expect(creditScore.value).toBe(_bandMap.get(CreditScoreCategory.Poor)!.value);
-    expect(creditScore.category).toBe(CreditScoreCategory.Poor);
-
+    expect(creditScore).toEqual(CreditScore.fromCategory(CreditScoreCategory.Poor));
     expect(getCreditScore({ paymentHistory: [], creditUtilisationPercentage: 0.9}))
-    .toEqual({ category: CreditScoreCategory.Poor, value: _bandMap.get(CreditScoreCategory.Poor)!.value});
+      .toEqual(CreditScore.fromCategory(CreditScoreCategory.Poor));
   });
 
   it("should return fair if the credit utilisation is between 50% and 70%", () => {
@@ -72,8 +67,7 @@ describe("getCreditScore", () => {
       creditUtilisationPercentage: 0.6,
     };
     const creditScore = getCreditScore(creditReport);
-    expect(creditScore.value).toBe(_bandMap.get(CreditScoreCategory.Fair)!.value);
-    expect(creditScore.category).toBe(CreditScoreCategory.Fair);
+    expect(creditScore).toEqual(CreditScore.fromCategory(CreditScoreCategory.Fair));
   });
 
   it("should return good if the credit utilisation is between 30% and 50%", () => {
@@ -82,8 +76,7 @@ describe("getCreditScore", () => {
       creditUtilisationPercentage: 0.4,
     };
     const creditScore = getCreditScore(creditReport);
-    expect(creditScore.value).toBe(_bandMap.get(CreditScoreCategory.Good)!.value);
-    expect(creditScore.category).toBe(CreditScoreCategory.Good);
+    expect(creditScore).toEqual(CreditScore.fromCategory(CreditScoreCategory.Good));
   });
 
   it("should return excellent if the credit utilisation is less than 30%", () => {
@@ -92,8 +85,7 @@ describe("getCreditScore", () => {
       creditUtilisationPercentage: 0.2,
     };
     const creditScore = getCreditScore(creditReport);
-    expect(creditScore.value).toBe(_bandMap.get(CreditScoreCategory.Excellent)!.value);
-    expect(creditScore.category).toBe(CreditScoreCategory.Excellent);
+    expect(creditScore).toEqual(CreditScore.fromCategory(CreditScoreCategory.Excellent));
   });
 });
 
