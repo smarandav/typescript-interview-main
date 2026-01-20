@@ -55,7 +55,7 @@ export class CreditScore {
   static fromCategory(category: CreditScoreCategory): CreditScore {
     const band = _bandMap.get(category);
     if (!band) {
-      throw new RangeError(`No category found for CreditScoreCategory ${category}`);
+      throw new RangeError(`No band found for CreditScoreCategory ${category}`);
     }
     return new CreditScore(band.value, category);
   }
@@ -73,9 +73,6 @@ export const getCreditScore = (c: CreditReport): CreditScore => {
     throw new TypeError("creditUtilisationPercentage must be a finite number");
   }
 
-  var band = _bands.find(b => x > b.min && x<=b.max);
-
-
   var overdueInvoicesInPast6Months = c.paymentHistory.filter(p => p.status == InvoiceStatus.Unpaid && 
       p.dueDate < new Date() && p.dueDate > addMonths(new Date(), -6));
   if (overdueInvoicesInPast6Months.length >= 2)
@@ -83,6 +80,7 @@ export const getCreditScore = (c: CreditReport): CreditScore => {
     return CreditScore.fromCategory(CreditScoreCategory.VeryPoor);
   }
 
+  var band = _bands.find(b => x > b.min && x<=b.max);
   if (band!.value > 720) { 
     var overdueInvoice = c.paymentHistory.find(p => p.status == InvoiceStatus.Unpaid && 
       p.dueDate < new Date());
